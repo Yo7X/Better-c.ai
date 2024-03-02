@@ -17,7 +17,7 @@ A simple chrome extension to improve character.ai
 
 > 4) Unzip the folder
 
-> 5)Go to manage extensions and turn on developer mod
+> 5) Go to manage extensions and turn on developer mod
 
 > 4) Load unpacked
 
