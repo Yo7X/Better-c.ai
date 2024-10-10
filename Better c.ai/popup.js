@@ -2,17 +2,25 @@ document.addEventListener('DOMContentLoaded', function () {
 
     //Get and apply saved visual settings
     chrome.storage.sync.get('formattingColors', function (data) {
-        document.getElementById('formattingColors').checked = !!data.formattingColors;
+        document.getElementById('formattingColorsToggle').checked = !!data.formattingColors;
+    });
+    chrome.storage.sync.get('stuckText', function (data) {
+        document.getElementById('disableStruckTextToggle').checked = !!data.stuckText;
+    });
+    chrome.storage.sync.get('boldColor', function (data) {
+        document.getElementById('boldTextColor').value = data.boldColor
+    });
+    chrome.storage.sync.get('italicsColor', function (data) {
+        document.getElementById('italicsTextColor').value = data.italicsColor
     });
 
-    chrome.storage.sync.get('customTextSize', function (data) {
-        document.getElementById('customTextSize').checked = !!data.customTextSize;
+    chrome.storage.sync.get('textSize', function (data) {
+        document.getElementById('textSizeDisplay').innerHTML = data.textSize
+        document.getElementById('textSizePicker').value = data.textSize
     });
-
-
 
     //Send toggled settings to content script
-    document.getElementById('formattingColors').addEventListener('change', function () {
+    document.getElementById('formattingColorsToggle').addEventListener('change', function () {
 
         chrome.storage.sync.set({ 'formattingColors': this.checked })
 
@@ -29,38 +37,51 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     })
 
-    document.getElementById('customTextSize').addEventListener('change', function () {
+    document.getElementById('disableStruckTextToggle').addEventListener('change', function () {
 
-        chrome.storage.sync.set({ 'customTextSize': this.checked })
+        chrome.storage.sync.set({ 'stuckText': this.checked })
+
 
         if (this.checked) {
             chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-                chrome.tabs.sendMessage(tabs[0].id, { action: 'customTextSizeOn', value: document.getElementById('textSizePicker').value });
+                chrome.tabs.sendMessage(tabs[0].id, { action: 'struckTextOn' });
             });
         } else {
             chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-                chrome.tabs.sendMessage(tabs[0].id, { action: 'customTextSizeOff'});
+                chrome.tabs.sendMessage(tabs[0].id, { action: 'struckTextOff'});
             });
         }
     })
 
-    chrome.storage.sync.get('userSelectedTextSize', function (data) {
-        if (data.userSelectedTextSize) {
-            document.getElementById('textSizePicker').value = parseInt(data.userSelectedTextSize);
-            document.getElementById('textSizeDisplay').innerHTML = data.userSelectedTextSize
-        }
-    });
+    document.getElementById('boldTextColor').addEventListener('blur', function () {
+         x = this.value
 
-    document.getElementById('textSizePicker').addEventListener('input', function() {
-        chrome.storage.sync.set({ 'userSelectedTextSize': this.value })
-        document.getElementById('textSizeDisplay').innerHTML = this.value
+        chrome.storage.sync.set({ 'boldColor': this.value })
+
+        chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+            chrome.tabs.sendMessage(tabs[0].id, { action: 'changeBoldTextColor', value: x });
+        });
     })
 
-})
+    document.getElementById('italicsTextColor').addEventListener('blur', function () {
+        x = this.value
+
+        chrome.storage.sync.set({ 'italicsColor': this.value })
+
+        chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+            chrome.tabs.sendMessage(tabs[0].id, { action: 'changeItalicsTextColor', value: x });
+        });
+    })
 
 
-document.getElementById('rstSvdBts').addEventListener('click', function() {
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-        chrome.tabs.sendMessage(tabs[0].id, { action: 'resetBots' });
-    });
+    document.getElementById('textSizePicker').addEventListener('input', function () {
+        document.getElementById('textSizeDisplay').innerHTML = this.value
+        x = this.value
+
+        chrome.storage.sync.set({ 'textSize': this.value })
+
+        chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+            chrome.tabs.sendMessage(tabs[0].id, { action: 'changeTextSize', value: x});
+        });
+    })
 })
